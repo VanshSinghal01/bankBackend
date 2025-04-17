@@ -1,5 +1,5 @@
 const express = require("express")
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 var validator = require('validator');
 const app = express()
 const connect = require('./database/connection.js')
