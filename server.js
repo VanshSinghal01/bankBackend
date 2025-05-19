@@ -109,27 +109,22 @@ app.post('/emailsend', async (req, res) => {
     }
 
     // Generate OTP and Account Number
-    otpgen = OTP();
+    const otpgen = OTP();
     const accountNumber = AcountNO();
-    accountnum = accountNumber; // Store plain value
+    accountnum = accountNumber;
 
     console.log(`Generated OTP for ${Email}: ${otpgen}`);
     console.log(`Generated Account Number for ${Email}: ${accountNumber}`);
 
-    // Send email with account number and OTP
-    const emailContent = `
-      Dear Customer,
-      
-      Welcome to VS Bank!
-      Your account number is: ${accountNumber}.
-      Please use the following OTP to confirm your registration: ${otpgen}.
-      
-      Thank you for choosing us!
-      
-      Best Regards,
-      VS Bank Team
-    `;
-    send(Email, emailContent);
+
+    const emailResult = await send(Email , otpgen, accountNumber);
+    console.log(`Email sent to ${Email}:`, emailResult);
+
+    if (!emailResult || emailResult.rejected.length > 0) {
+      return res.status(config.StatusCode.INTERNAL_SERVER_ERROR).json({
+        message: "Failed to send email. Please try again.",
+      });
+    }
 
     res.status(config.StatusCode.SUCCCESS).json({
       message: 'OTP and account number sent successfully',
@@ -141,6 +136,7 @@ app.post('/emailsend', async (req, res) => {
     res.status(config.StatusCode.INTERNAL_SERVER_ERROR).json({ message: "An error occurred" });
   }
 });
+
 
 
 
@@ -341,6 +337,6 @@ app.post('/withdraw', async (req, res) => {
 
 connect()
 
-app.listen(port,'0.0.0.0', hostname, () => {
+app.listen(port, '0.0.0.0', hostname, () => {
   console.log(`Server running at http://${hostname}:${port}`);
 });
