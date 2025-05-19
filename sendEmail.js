@@ -8,22 +8,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-async function main(emailId, otp, accountNumber) {
-  const textVersion = `
-Welcome to VS Bank!
-
-Your OTP is: ${otp}
-Your account number is: ${accountNumber}
-
-Please do not share this with anyone.
-`;
-
-  const htmlVersion = `
-<p>Welcome to <strong>VS Bank</strong>!</p>
-<p>Your OTP is: <strong>${otp}</strong></p>
-<p>Your account number is: <strong>${accountNumber}</strong></p>
-<p style="color: gray; font-size: 0.9em;">Please do not share this with anyone.</p>
-`;
+async function main(emailId, textVersion, htmlVersion) {
 
   try {
     const info = await transporter.sendMail({
@@ -33,7 +18,6 @@ Please do not share this with anyone.
       text: textVersion,
       html: htmlVersion,
     });
-
     console.log("Email sent:", info.messageId);
     return info;
   } catch (error) {
