@@ -14,6 +14,7 @@ const hostname = config.SERVER.HOSTNAME;
 const port = config.SERVER.PORT;
 
 let accountnum = {};
+const otpStore = {};
 
 const OTP = () => {
   return Math.floor(1000 + Math.random() * 900000);
@@ -50,14 +51,18 @@ app.post('/datasave', async (req, res) => {
 
   console.log('Received data:', req.body);
 
-  if (!otp) {
-    return res.status(config.StatusCode.BAD_REQUEST).json({ message: 'OTP is required' });
+  const storedOtp = otpStore[Email.toLowerCase()];
+  if (!storedOtp || otp != storedOtp) {
+    return res.status(config.StatusCode.BAD_REQUEST).json({ message: 'OTP is incorrect or expired' });
   }
 
-  console.log(`Generated OTP: ${otpgen}, Received OTP: ${otp}`);
+  // Optional: delete OTP after use
+  delete otpStore[Email.toLowerCase()];
 
-  if (otp != otpgen) {
-    return res.status(config.StatusCode.BAD_REQUEST).json({ message: 'OTP is incorrect' });
+  console.log(`Verified OTP for ${Email}: ${storedOtp}`);
+
+  if (!Email || !Name || !Password || !ConfirmPassword || !Age || !Amount || !AccType) {
+    return res.status(config.StatusCode.BAD_REQUEST).json({ message: 'All fields are required' });
   }
 
   try {
@@ -95,6 +100,7 @@ app.post('/datasave', async (req, res) => {
 });
 
 
+
 app.post('/emailsend', async (req, res) => {
   const { Email } = req.body;
 
@@ -109,17 +115,18 @@ app.post('/emailsend', async (req, res) => {
     }
 
     // Generate OTP and Account Number
-    const otpgen = OTP();
+    const otp = OTP();
+    otpStore[Email.toLowerCase()] = otp;
     const accountNumber = AcountNO();
     accountnum = accountNumber;
 
-    console.log(`Generated OTP for ${Email}: ${otpgen}`);
+    console.log(`Generated OTP for ${Email}: ${otp}`);
     console.log(`Generated Account Number for ${Email}: ${accountNumber}`);
 
     const textVersion = `
 Welcome to VS Bank!
 
-Your OTP is: ${otpgen}
+Your OTP is: ${otp}
 Your account number is: ${accountNumber}
 
 Please do not share this with anyone.
@@ -127,16 +134,15 @@ Please do not share this with anyone.
 
     const htmlVersion = `
 <p>Welcome to <strong>VS Bank</strong>!</p>
-<p>Your OTP is: <strong>${otpgen}</strong></p>
+<p>Your OTP is: <strong>${otp}</strong></p>
 <p>Your account number is: <strong>${accountNumber}</strong></p>
 <p style="color: gray; font-size: 0.9em;">Please do not share this with anyone.</p>
 `;
 
-
     const emailResult = await send(Email, textVersion, htmlVersion);
     console.log(`Email sent to ${Email}:`, emailResult);
 
-    if (!emailResult || emailResult.rejected.length > 0) {
+    if (!emailResult || emailResult.rejected?.length > 0) {
       return res.status(config.StatusCode.INTERNAL_SERVER_ERROR).json({
         message: "Failed to send email. Please try again.",
       });
@@ -144,7 +150,7 @@ Please do not share this with anyone.
 
     res.status(config.StatusCode.SUCCCESS).json({
       message: 'OTP and account number sent successfully',
-      otpgen,
+      otp, // returning correct OTP value
       accountNumber,
     });
   } catch (err) {
