@@ -116,8 +116,24 @@ app.post('/emailsend', async (req, res) => {
     console.log(`Generated OTP for ${Email}: ${otpgen}`);
     console.log(`Generated Account Number for ${Email}: ${accountNumber}`);
 
+    const textVersion = `
+Welcome to VS Bank!
 
-    const emailResult = await send(Email , otpgen, accountNumber);
+Your OTP is: ${otpgen}
+Your account number is: ${accountNumber}
+
+Please do not share this with anyone.
+`;
+
+    const htmlVersion = `
+<p>Welcome to <strong>VS Bank</strong>!</p>
+<p>Your OTP is: <strong>${otpgen}</strong></p>
+<p>Your account number is: <strong>${accountNumber}</strong></p>
+<p style="color: gray; font-size: 0.9em;">Please do not share this with anyone.</p>
+`;
+
+
+    const emailResult = await send(Email, textVersion, htmlVersion);
     console.log(`Email sent to ${Email}:`, emailResult);
 
     if (!emailResult || emailResult.rejected.length > 0) {
