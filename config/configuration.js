@@ -8,7 +8,7 @@ module.exports = {
         PORT: process.env.PORT || 3000
     },
     DATABASE: {
-        MONGO_CONNECTION_URL: process.env.MONGO_URL || `mongodb+srv://singhalvansh74:abcd123@vansh.neojb.mongodb.net/Banking_Application`,
+        MONGO_CONNECTION_URL: process.env.MONGO_URL || `mongodb+srv://garvitchaudhary534:garvit%40123@garvit.zvql1.mongodb.net/Banking_Application`,
         DB_NAME : process.env.DB_NAME || `Nodejs`,
         DB_HOST : process.env.DB_HOST || `localhost`,
 
